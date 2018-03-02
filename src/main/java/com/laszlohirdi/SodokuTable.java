@@ -25,6 +25,7 @@ public class SodokuTable {
   public static SodokuTable generate() {
     int tryCount = 0;
     while (true) {
+      ++tryCount;
       SodokuTable sodokuTable = null;
       try {
         sodokuTable = new SodokuTable();
