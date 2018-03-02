@@ -72,13 +72,11 @@ public class SodokuTable {
   }
 
   private Set<Integer> getMissingElementsFromRow(final int row) {
-    final Set<Integer> currentElements = getMissingElementsFromRectangle(row, 1, row, SODOKU_SIZE);
-    return getMissingElementsFromAll(currentElements);
+    return getMissingElementsFromRectangle(row, 1, row, SODOKU_SIZE);
   }
 
   private Set<Integer> getMissingElementsFromColumn(final int column) {
-    final Set<Integer> currentElements = getMissingElementsFromRectangle(1, column, SODOKU_SIZE, column);
-    return getMissingElementsFromAll(currentElements);
+    return getMissingElementsFromRectangle(1, column, SODOKU_SIZE, column);
   }
 
   private int getTopIndex(final int index) {
@@ -101,14 +99,7 @@ public class SodokuTable {
     final int hTop = getTopIndex(column);
     final int vBottom = getBottomIndex(vTop);
     final int hBottom = getBottomIndex(hTop);
-    final Set<Integer> currentElements = getMissingElementsFromRectangle(vTop, hTop, vBottom, hBottom);
-    return getMissingElementsFromAll(currentElements);
-  }
-
-  private Set<Integer> getMissingElementsFromAll(final Set<Integer> currentElements) {
-    final Set<Integer> missingElements = new HashSet<>(ALL_ELEMENTS);
-    missingElements.removeAll(currentElements);
-    return missingElements;
+    return getMissingElementsFromRectangle(vTop, hTop, vBottom, hBottom);
   }
 
   private Set<Integer> getMissingElementsFromAll(final Set<Integer> missingElements1,
@@ -131,7 +122,9 @@ public class SodokuTable {
         }
       }
     }
-    return currentElements;
+    final Set<Integer> missingElements = new HashSet<>(ALL_ELEMENTS);
+    missingElements.removeAll(currentElements);
+    return missingElements;
   }
 
   public static void main(final String[] args) {
