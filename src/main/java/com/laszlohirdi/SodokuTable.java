@@ -36,7 +36,7 @@ public class SodokuTable {
             final Set<Integer> missingElementsFromColumn = sodokuTable.getMissingElementsFromColumn(h);
             final Set<Integer> missingElementsFromSection = sodokuTable.getMissingElementsFromSection(v, h);
             final Set<Integer> missingElements = sodokuTable
-                .getMissingElements(missingElementsFromRow, missingElementsFromColumn,
+                .getMissingElementsFromAll(missingElementsFromRow, missingElementsFromColumn,
                     missingElementsFromSection);
             final Optional<Integer> optionalElement =
                 missingElements.stream().skip(ran.nextInt(missingElements.size())).findFirst();
@@ -72,13 +72,13 @@ public class SodokuTable {
   }
 
   private Set<Integer> getMissingElementsFromRow(final int row) {
-    final Set<Integer> currentElements = getCurrentElements(row, 1, row, SODOKU_SIZE);
-    return getMissingElements(currentElements);
+    final Set<Integer> currentElements = getMissingElementsFromRectangle(row, 1, row, SODOKU_SIZE);
+    return getMissingElementsFromAll(currentElements);
   }
 
   private Set<Integer> getMissingElementsFromColumn(final int column) {
-    final Set<Integer> currentElements = getCurrentElements(1, column, SODOKU_SIZE, column);
-    return getMissingElements(currentElements);
+    final Set<Integer> currentElements = getMissingElementsFromRectangle(1, column, SODOKU_SIZE, column);
+    return getMissingElementsFromAll(currentElements);
   }
 
   private int getTopIndex(final int index) {
@@ -92,30 +92,36 @@ public class SodokuTable {
     return topIndex;
   }
 
+  private int getBottomIndex(final int topIndex) {
+    return topIndex + SECTION_SIZE - 1;
+  }
+
   private Set<Integer> getMissingElementsFromSection(final int row, final int column) {
     final int vTop = getTopIndex(row);
     final int hTop = getTopIndex(column);
-    final int vBottom = vTop + SECTION_SIZE - 1;
-    final int hBottom = hTop + SECTION_SIZE - 1;
-    final Set<Integer> currentElements = getCurrentElements(vTop, hTop, vBottom, hBottom);
-    return getMissingElements(currentElements);
+    final int vBottom = getBottomIndex(vTop);
+    final int hBottom = getBottomIndex(hTop);
+    final Set<Integer> currentElements = getMissingElementsFromRectangle(vTop, hTop, vBottom, hBottom);
+    return getMissingElementsFromAll(currentElements);
   }
 
-  private Set<Integer> getMissingElements(Set<Integer> currentElements) {
+  private Set<Integer> getMissingElementsFromAll(final Set<Integer> currentElements) {
     final Set<Integer> missingElements = new HashSet<>(ALL_ELEMENTS);
     missingElements.removeAll(currentElements);
     return missingElements;
   }
 
-  private Set<Integer> getMissingElements(final Set<Integer> missingElements1, final Set<Integer> missingElements2,
-                                          final Set<Integer> missingElements3) {
+  private Set<Integer> getMissingElementsFromAll(final Set<Integer> missingElements1,
+                                                 final Set<Integer> missingElements2,
+                                                 final Set<Integer> missingElements3) {
     final Set<Integer> missingElements = new HashSet<>(missingElements1);
     missingElements.retainAll(missingElements2);
     missingElements.retainAll(missingElements3);
     return missingElements;
   }
 
-  private Set<Integer> getCurrentElements(final int vTop, final int hTop, final int vBottom, final int hBottom) {
+  private Set<Integer> getMissingElementsFromRectangle(final int vTop, final int hTop, final int vBottom,
+                                                       final int hBottom) {
     final Set<Integer> currentElements = new HashSet<>();
     for (int v = vTop; v <= vBottom; v++) {
       for (int h = hTop; h <= hBottom; h++) {
