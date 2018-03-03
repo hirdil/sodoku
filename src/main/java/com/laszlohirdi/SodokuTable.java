@@ -113,17 +113,15 @@ public class SodokuTable {
 
   private Set<Integer> getMissingElementsFromRectangle(final int vTop, final int hTop, final int vBottom,
                                                        final int hBottom) {
-    final Set<Integer> currentElements = new HashSet<>();
+    final Set<Integer> missingElements = new HashSet<>(ALL_ELEMENTS);
     for (int v = vTop; v <= vBottom; v++) {
       for (int h = hTop; h <= hBottom; h++) {
         final int element = table[v - 1][h - 1];
         if (element != 0) {
-          currentElements.add(element);
+          missingElements.remove(element);
         }
       }
     }
-    final Set<Integer> missingElements = new HashSet<>(ALL_ELEMENTS);
-    missingElements.removeAll(currentElements);
     return missingElements;
   }
 
