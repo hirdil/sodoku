@@ -1,4 +1,4 @@
-package com.laszlohirdi;
+package org.sodoku;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -17,12 +17,12 @@ public class SodokuTable {
 
   public static SodokuTable generate() {
     int tryCount = 0;
+    Random random = new Random();
     while (true) {
       ++tryCount;
-      SodokuTable sodokuTable = null;
+      ;
       try {
-        sodokuTable = new SodokuTable();
-        Random random = new Random();
+        SodokuTable sodokuTable = new SodokuTable();
 
         for (int row = 0; row < SODOKU_SIZE; row++) {
           for (int col = 0; col < SODOKU_SIZE; col++) {
@@ -48,8 +48,8 @@ public class SodokuTable {
     return list.get(random.nextInt(list.size()));
   }
 
-  private Set<Integer> getMissingElements
-      (Set<Integer> rowElements, Set<Integer> colElements, Set<Integer> sectionElements) {
+  private Set<Integer> getMissingElements(Set<Integer> rowElements, Set<Integer> colElements,
+                                          Set<Integer> sectionElements) {
     Set<Integer> missingElements = new HashSet<>(ALL_ELEMENTS);
     missingElements.removeAll(rowElements);
     missingElements.removeAll(colElements);
