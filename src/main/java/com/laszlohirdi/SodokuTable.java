@@ -1,10 +1,6 @@
 package com.laszlohirdi;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -15,10 +11,7 @@ public class SodokuTable {
   private static final int SECTION_SIZE = (int)Math.sqrt(SODOKU_SIZE);
 
   private static final Set<Integer> ALL_ELEMENTS =
-      Collections.unmodifiableSet(
-          IntStream.range(1, SODOKU_SIZE + 1).boxed().collect(Collectors.toSet()));
-
-  private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+      IntStream.rangeClosed(1, SODOKU_SIZE).boxed().collect(Collectors.toSet());
 
   private final int[][] table = new int[SODOKU_SIZE][SODOKU_SIZE];
 
@@ -29,103 +22,82 @@ public class SodokuTable {
       SodokuTable sodokuTable = null;
       try {
         sodokuTable = new SodokuTable();
-        final Random ran = new Random();
-        for (int v = 1; v <= SODOKU_SIZE; v++) {
-          for (int h = 1; h <= SODOKU_SIZE; h++) {
-            final Set<Integer> missingElementsFromRow = sodokuTable.getMissingElementsFromRow(v);
-            final Set<Integer> missingElementsFromColumn = sodokuTable.getMissingElementsFromColumn(h);
-            final Set<Integer> missingElementsFromSection = sodokuTable.getMissingElementsFromSection(v, h);
-            final Set<Integer> missingElements = sodokuTable
-                .getMissingElementsFromAll(missingElementsFromRow, missingElementsFromColumn,
-                    missingElementsFromSection);
-            final Optional<Integer> optionalElement =
-                missingElements.stream().skip(ran.nextInt(missingElements.size())).findFirst();
-            final int generatedElement = optionalElement.get();
-            sodokuTable.table[v - 1][h - 1] = generatedElement;
+        Random random = new Random();
+
+        for (int row = 0; row < SODOKU_SIZE; row++) {
+          for (int col = 0; col < SODOKU_SIZE; col++) {
+            Set<Integer> rowElements = sodokuTable.getRowElements(row);
+            Set<Integer> colElements = sodokuTable.getColumnElements(col);
+            Set<Integer> sectionElements = sodokuTable.getSectionElements(row, col);
+            Set<Integer> missingElements = sodokuTable.getMissingElements(rowElements, colElements, sectionElements);
+            int randomElement = getRandomElement(missingElements, random);
+            sodokuTable.table[row][col] = randomElement;
           }
         }
+
         System.out.println("Try count:" + tryCount);
         return sodokuTable;
       } catch (Exception e) {
-        System.out.println(e);
-        System.out.println(sodokuTable);
+        System.out.println("retrying...");
       }
     }
+  }
+
+  private static int getRandomElement(Set<Integer> set, Random random) {
+    List<Integer> list = new ArrayList<>(set);
+    return list.get(random.nextInt(list.size()));
+  }
+
+  private Set<Integer> getMissingElements
+      (Set<Integer> rowElements, Set<Integer> colElements, Set<Integer> sectionElements) {
+    Set<Integer> missingElements = new HashSet<>(ALL_ELEMENTS);
+    missingElements.removeAll(rowElements);
+    missingElements.removeAll(colElements);
+    missingElements.removeAll(sectionElements);
+    return missingElements;
+  }
+
+  private Set<Integer> getRowElements(int row) {
+    return Arrays.stream(table[row]).boxed().collect(Collectors.toSet());
+  }
+
+  private Set<Integer> getColumnElements(int col) {
+    return IntStream.range(0, SODOKU_SIZE).map(i -> table[i][col]).boxed().collect(Collectors.toSet());
+  }
+
+  private Set<Integer> getSectionElements(int row, int col) {
+    int startRow = (row / SECTION_SIZE) * SECTION_SIZE;
+    int startCol = (col / SECTION_SIZE) * SECTION_SIZE;
+
+    Set<Integer> sectionElements = new HashSet<>();
+    for (int i = startRow; i < startRow + SECTION_SIZE; i++) {
+      for (int j = startCol; j < startCol + SECTION_SIZE; j++) {
+        sectionElements.add(table[i][j]);
+      }
+    }
+
+    return sectionElements;
   }
 
   @Override
   public String toString() {
-    final StringBuilder representation = new StringBuilder();
-    for (int v = 1; v <= SODOKU_SIZE; v++) {
-      for (int h = 1; h <= SODOKU_SIZE; h++) {
-        representation.append(table[v - 1][h - 1]);
-        if (h % SECTION_SIZE == 0) {
-          representation.append(' ');
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < SODOKU_SIZE; i++) {
+      for (int j = 0; j < SODOKU_SIZE; j++) {
+        sb.append(table[i][j]).append(' ');
+        if ((j + 1) % SECTION_SIZE == 0) {
+          sb.append(' ');
         }
       }
-      representation.append(LINE_SEPARATOR);
-      if (v % SECTION_SIZE == 0) {
-        representation.append(LINE_SEPARATOR);
+      sb.append('\n');
+      if ((i + 1) % SECTION_SIZE == 0) {
+        sb.append('\n');
       }
     }
-    return representation.toString();
+    return sb.toString();
   }
 
-  private Set<Integer> getMissingElementsFromRow(final int row) {
-    return getMissingElementsFromRectangle(row, 1, row, SODOKU_SIZE);
-  }
-
-  private Set<Integer> getMissingElementsFromColumn(final int column) {
-    return getMissingElementsFromRectangle(1, column, SODOKU_SIZE, column);
-  }
-
-  private int getTopIndex(final int index) {
-    final int topIndex;
-    final int mod = index % SECTION_SIZE;
-    if (mod == 0) {
-      topIndex = index - SECTION_SIZE + 1;
-    } else {
-      topIndex = index - mod + 1;
-    }
-    return topIndex;
-  }
-
-  private int getBottomIndex(final int topIndex) {
-    return topIndex + SECTION_SIZE - 1;
-  }
-
-  private Set<Integer> getMissingElementsFromSection(final int row, final int column) {
-    final int vTop = getTopIndex(row);
-    final int hTop = getTopIndex(column);
-    final int vBottom = getBottomIndex(vTop);
-    final int hBottom = getBottomIndex(hTop);
-    return getMissingElementsFromRectangle(vTop, hTop, vBottom, hBottom);
-  }
-
-  private Set<Integer> getMissingElementsFromAll(final Set<Integer> missingElements1,
-                                                 final Set<Integer> missingElements2,
-                                                 final Set<Integer> missingElements3) {
-    final Set<Integer> missingElements = new HashSet<>(missingElements1);
-    missingElements.retainAll(missingElements2);
-    missingElements.retainAll(missingElements3);
-    return missingElements;
-  }
-
-  private Set<Integer> getMissingElementsFromRectangle(final int vTop, final int hTop, final int vBottom,
-                                                       final int hBottom) {
-    final Set<Integer> missingElements = new HashSet<>(ALL_ELEMENTS);
-    for (int v = vTop; v <= vBottom; v++) {
-      for (int h = hTop; h <= hBottom; h++) {
-        final int element = table[v - 1][h - 1];
-        if (element != 0) {
-          missingElements.remove(element);
-        }
-      }
-    }
-    return missingElements;
-  }
-
-  public static void main(final String[] args) {
+  public static void main(String[] args) {
     System.out.println(SodokuTable.generate());
   }
 }
