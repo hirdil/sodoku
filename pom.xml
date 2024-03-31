@@ -8,6 +8,14 @@
     <artifactId>sodoku</artifactId>
     <version>1.0-SNAPSHOT</version>
 
+    <dependencies>
+    <dependency>
+        <groupId>org.ejml</groupId>
+        <artifactId>ejml-simple</artifactId>
+        <version>0.38</version>
+    </dependency>
+    </dependencies>
+
     <build>
         <plugins>
             <plugin>
