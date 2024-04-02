@@ -1,6 +1,9 @@
 package org.sodoku;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -15,7 +18,15 @@ public class SodokuTable {
   private static final Set<Integer> ALL_ELEMENTS =
       IntStream.rangeClosed(1, SODOKU_SIZE).boxed().collect(Collectors.toSet());
 
-  private final SimpleMatrix table = new SimpleMatrix(SODOKU_SIZE, SODOKU_SIZE);
+  private final SimpleMatrix table;
+
+  public SodokuTable() {
+    table = new SimpleMatrix(SODOKU_SIZE, SODOKU_SIZE);
+  }
+
+  public SodokuTable(SimpleMatrix rotatedTable) {
+    this.table = rotatedTable;
+  }
 
   public static SodokuTable generate() {
     Random random = new Random();
@@ -87,10 +98,50 @@ public class SodokuTable {
         sb.append('\n');
       }
     }
+    sb.append("-------------------\n");
     return sb.toString();
   }
 
+  private SodokuTable rotateLeft() {
+    SimpleMatrix rotatedTable = table.transpose();
+    for (int row = 0; row < SODOKU_SIZE; row++) {
+      for (int col = 0; col < SODOKU_SIZE / 2; col++) {
+        double temp = rotatedTable.get(row, col);
+        rotatedTable.set(row, col, rotatedTable.get(row, SODOKU_SIZE - col - 1));
+        rotatedTable.set(row, SODOKU_SIZE - col - 1, temp);
+      }
+    }
+    return new SodokuTable(rotatedTable);
+  }
+
+  private SodokuTable mirrorHorizontal() {
+    SimpleMatrix mirroredTable = new SimpleMatrix(SODOKU_SIZE, SODOKU_SIZE);
+    for (int row = 0; row < SODOKU_SIZE; row++) {
+      for (int col = 0; col < SODOKU_SIZE; col++) {
+        mirroredTable.set(row, SODOKU_SIZE - col - 1, table.get(row, col));
+      }
+    }
+    return new SodokuTable(mirroredTable);
+  }
+
+  private SodokuTable mirrorVertical() {
+    SimpleMatrix mirroredTable = new SimpleMatrix(SODOKU_SIZE, SODOKU_SIZE);
+    for (int row = 0; row < SODOKU_SIZE; row++) {
+      for (int col = 0; col < SODOKU_SIZE; col++) {
+        mirroredTable.set(SODOKU_SIZE - row - 1, col, table.get(row, col));
+      }
+    }
+    return new SodokuTable(mirroredTable);
+  }
+
   public static void main(String[] args) {
-    System.out.println(SodokuTable.generate());
+    SodokuTable generatedMatrix = SodokuTable.generate();
+    System.out.println(generatedMatrix);
+    System.out.println(generatedMatrix.mirrorHorizontal());
+    System.out.println(generatedMatrix.mirrorVertical());
+    System.out.println(generatedMatrix.mirrorVertical().mirrorHorizontal());
+    System.out.println(generatedMatrix = generatedMatrix.rotateLeft());
+    System.out.println(generatedMatrix = generatedMatrix.rotateLeft());
+    System.out.println(generatedMatrix = generatedMatrix.rotateLeft());
   }
 }
